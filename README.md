@@ -12,13 +12,35 @@
 ## Dev notes
 
 ### Roadmap
-"You are not allowed, ask an admin to add {ID} to users"
+commands as buttons
+https://www.mindk.com/blog/how-to-develop-a-chat-bot/ Step #6
 
-add at runtime via admin command? 
+resolve names to ids: search group for name, return id, group only implicit conversion 
+
+get rank of all users
+-> \rank Robin =>\rank 213243
+
+
+"You are not allowed, ask an admin to add {ID} to users"
+-> add at runtime via admin command? 
 /allow ID    /forbid ID
 -> would need a persistent store 
 -> would make config useless? 
 -> Maybe only admin via config and users at runtime
+
+differentiate between private chat and group
+-> "thanks for inviting me here" vs "hello {user}"
+if message.chat.type == "private":
+	# private chat message
+
+elif message.chat.type in ("group", "supergroup"):
+	# group chat message
+
+check server status (online/offline, n_players, uptime)
+-> verbose mode prints joined players
+-> would need \hide (me) for privacy minded people
+
+
 
 
 Start/save/stop server/service
@@ -31,6 +53,8 @@ Start/save/stop server/service
 
 ### References
 https://core.telegram.org/bots
+https://core.telegram.org/bots/api#message
+
 https://www.mindk.com/blog/how-to-develop-a-chat-bot/
 
 Very good similar implementation: 

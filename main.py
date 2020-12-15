@@ -9,6 +9,11 @@ bot = telebot.TeleBot(config.TOKEN)
 # send on /status
 # from mcstatus import MinecraftServer
 # server = MinecraftServer.lookup("127.0.0.1:25565")
+# server = MinecraftServer(MINECRAFT_SERVER_IP, MINECRAFT_SERVER_PORT)
+
+# query = server.query()
+# query.players.names
+
 # status = server.status()
 # status.players.online
 
