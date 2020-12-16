@@ -1,7 +1,13 @@
+import random
+
 import telebot
+from telebot import apihelper
 
 import config
+from auth import allowed
+from userLog import add_user, print_users
 
+apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(config.TOKEN)
 
 
@@ -18,9 +24,19 @@ bot = telebot.TeleBot(config.TOKEN)
 # status.players.online
 
 
-def is_user(message) -> bool:
-    user_id = message.from_user.id
-    return user_id in zip(config.ADMINS, config.USERS)
+@bot.middleware_handler(update_types=['message'])
+def log_user(bot_instance, message):
+    add_user(message.from_user)
+    print_users()
+
+
+@bot.message_handler(func=lambda query: allowed(query))
+def block_forbidden(message):
+    print(f"Forbidden attempt from {message.from_user.id}")
+    bot.send_message(
+        message.chat.id,
+        f"Sorry {message.from_user.first_name}, but you are not a registered user (ID: {message.from_user.id})"
+    )
 
 
 @bot.message_handler(commands=['start', 'hello', 'help', 'h'])
@@ -33,6 +49,32 @@ def start_command(message):
         'To stop send /stop.\n' +
         'To get help press /help.'
     )
+    cmd_command(message)
+
+
+@bot.message_handler(commands=['cmd', "commands", "c"])
+def cmd_command(message):
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    keyboard.row(
+        telebot.types.InlineKeyboardButton("help", callback_data='help'),
+        telebot.types.InlineKeyboardButton("status", callback_data='status'),
+        telebot.types.InlineKeyboardButton("rank", callback_data='rank')
+    )
+    keyboard.row(
+        telebot.types.InlineKeyboardButton("start_server", callback_data='start_server'),
+        telebot.types.InlineKeyboardButton("stop_server", callback_data='stop_server')
+    )
+
+    bot.send_message(
+        message.chat.id,
+        f'Commands:',
+        reply_markup=keyboard
+    )
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def test_callback(call):
+    print(f"Callback: {call}")
 
 
 @bot.message_handler(commands=['status'])
@@ -81,6 +123,13 @@ def help_command(message):
         '5) The bot supports inline. Type @<botusername> in any chat and the first letters of a currency.',
         reply_markup=keyboard
     )
+
+
+# last one by design!
+@bot.message_handler(content_types=['text'])
+def fallback(message):
+    answer = ("sorry?", "pardon?", "what?", "no idea...")
+    bot.send_message(message.chat.id, f"{random.choice(answer)} Might want to get /help")
 
 
 def main():

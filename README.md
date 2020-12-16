@@ -9,8 +9,10 @@
 
 ## Commands
 - hello/h/help/start (start is called by telegram on startup)
+- c/cmd/commands
 - rank [ID]
-- stop
+- start_server
+- stop_server
 - status
 
 ## Q & A
@@ -21,12 +23,6 @@ A: Because I can't access executables (minecraft!) from inside a container
 ## Dev notes
 
 ### Roadmap
-commands as buttons
-https://www.mindk.com/blog/how-to-develop-a-chat-bot/ Step #6
-
-accept inline commands
-https://github.com/eternnoir/pyTelegramBotAPI#inline-mode
-
 resolve names to ids: search group for name, return id, group only implicit conversion 
 
 get rank of all users
@@ -55,25 +51,26 @@ check server status (online/offline, n_players, uptime)
 -> verbose mode prints joined players
 -> would need \hide (me) for privacy minded people
 
+Start/save/stop server/service -> needs to be able to type commands in screen OR start server here
 
-Start/save/stop server/service
--> needs to be able to type commands in screen OR start server here
-
---> /say group messages in minecraft 
-
+--> /say group messages in minecraft
 
 eastereggs (send fortnite dancing steve gif?)
 
 add telegram badge
 
+accept inline commands
+https://github.com/eternnoir/pyTelegramBotAPI#inline-mode
 
 ### References
+
 - https://core.telegram.org/bots
 - https://core.telegram.org/bots/api#message
 
 - https://www.mindk.com/blog/how-to-develop-a-chat-bot/
 
-similar implementations: 
+similar implementations:
+
 - https://github.com/vendra/MinecraftTelegram (nice!)
 - https://github.com/mate-amargo/telegram-mc-bot
 
