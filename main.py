@@ -2,6 +2,7 @@ import random
 
 import telebot
 from telebot import apihelper
+from telebot.types import CallbackQuery
 
 import config
 from auth import allowed
@@ -72,13 +73,12 @@ def cmd_command(message):
     )
 
 
-@bot.callback_query_handler(func=lambda call: True)
-def test_callback(call):
-    print(f"Callback: {call}")
-
-
+@bot.callback_query_handler(func=lambda call: call.data == 'status')
 @bot.message_handler(commands=['status'])
 def status_command(message):
+    if type(message) == CallbackQuery:
+        message = message.message
+
     bot.send_message(
         message.chat.id,
         f'I am still alive.\n Server status is {"NOT IMPLEMENTED"}'
@@ -122,6 +122,17 @@ def help_command(message):
         'The bot will also show the difference between the previous and the current exchange rates.\n' +
         '5) The bot supports inline. Type @<botusername> in any chat and the first letters of a currency.',
         reply_markup=keyboard
+    )
+
+
+# --- fallback handlers
+
+@bot.callback_query_handler(func=lambda call: True)
+def test_callback(call):
+    print(f"Callback: {call}")
+    bot.send_message(
+        call.message.chat.id,
+        f"{call.data} is not implemented yet..."
     )
 
 
