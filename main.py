@@ -5,8 +5,9 @@ from telebot import apihelper
 from telebot.types import CallbackQuery, Message
 
 import config
-from auth import allowed, get_rank, get_user_ranks, Rank
-from userLog import log_contact, get_contacts
+from modules.auth import allowed, get_rank, get_user_ranks, Rank
+from modules.mc_server_observer import get_status
+from modules.userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(config.TOKEN)
@@ -14,27 +15,15 @@ bot = telebot.TeleBot(config.TOKEN)
 my_id = bot.get_me().id
 
 
-# if verbose: send updates on change
-# send on /status
-# from mcstatus import MinecraftServer
-# server = MinecraftServer.lookup("127.0.0.1:25565")
-# server = MinecraftServer(MINECRAFT_SERVER_IP, MINECRAFT_SERVER_PORT)
-
-# query = server.query()
-# query.players.names
-
-# status = server.status()
-# status.players.online
-
-def check_allowed(m: Message, rank: Rank):
+def forbidden_access(m: Message or CallbackQuery, rank: Rank):
     if allowed(m.from_user.id, rank):
-        return True
+        return False
 
     bot.send_message(
         m.chat.id,
         f"Sorry {m.from_user.first_name}, but your rank {get_rank(m.from_user.id).name} is not high enough"
     )
-    return False
+    return True
 
 
 @bot.middleware_handler(update_types=['message'])
@@ -103,9 +92,41 @@ def status_command(m):
     if type(m) == CallbackQuery:
         m = m.message
 
+    msg_send = bot.send_message(
+        m.chat.id,
+        f'Server status is [querying]'
+    )
+
+    bot.edit_message_text(f'Server status is {get_status()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'start_server')
+@bot.message_handler(commands=['start_server'])
+def start_server_command(m):
+    if forbidden_access(m, Rank.ADMIN):
+        return
+
+    if type(m) == CallbackQuery:
+        m = m.message
+
     bot.send_message(
         m.chat.id,
-        f'Server status is {"unknown"}'
+        f"start_server isn't done yet, sorry"
+    )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'stop_server')
+@bot.message_handler(commands=['stop_server'])
+def stop_server_command(m):
+    if forbidden_access(m, Rank.ADMIN):
+        return
+
+    if type(m) == CallbackQuery:
+        m = m.message
+
+    bot.send_message(
+        m.chat.id,
+        f"start_server isn't done yet, sorry"
     )
 
 
@@ -121,7 +142,7 @@ def rank_command(m):
 
 @bot.message_handler(commands=['list_ranks'])
 def list_user_ranks(m):
-    if not check_allowed(m, Rank.ADMIN):
+    if forbidden_access(m, Rank.ADMIN):
         return
 
     bot.send_message(m.chat.id, f"Users: {get_user_ranks()}")
@@ -129,7 +150,7 @@ def list_user_ranks(m):
 
 @bot.message_handler(commands=['list_contacts'])
 def list_contacts(m):
-    if not check_allowed(m, Rank.ADMIN):
+    if forbidden_access(m, Rank.ADMIN):
         return
 
     bot.send_message(m.chat.id, get_contacts())
