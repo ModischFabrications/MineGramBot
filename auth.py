@@ -1,6 +1,18 @@
-from enum import Enum
+from enum import IntEnum
+from typing import Dict
 
 import config
+
+
+# only class to know about authentication (config.USERS)
+# knows nothing about telebot and messages!
+
+
+class Rank(IntEnum):
+    BLOCKED = -1
+    UNKOWN = 0
+    USER = 1
+    ADMIN = 2
 
 
 # TODO: use persistent storage
@@ -11,21 +23,16 @@ import config
 # -> Maybe only admin via config and users at runtime
 # -> local user database
 
-class Rank(Enum):
-    BLOCKED = -1
-    UNKOWN = 0
-    USER = 1
-    ADMIN = 2
+users: Dict[int, Rank] = {uid: Rank(rank) for (uid, rank) in config.USERS.items()}
 
 
-def allowed(message, min_rank=1) -> bool:
-    user_id = message.from_user.id
-    return user_id in config.USERS.keys() and config.USERS[user_id] >= min_rank
+def allowed(user_id, min_rank=Rank.USER) -> bool:
+    return user_id in users.keys() and users[user_id] >= min_rank
 
 
-def get_ranks():
-    return config.USERS
+def get_user_ranks():
+    return {uid: rank.name for (uid, rank) in users.items()}
 
 
 def get_rank(user_id):
-    return Rank(config.USERS.get(user_id, Rank.UNKOWN))
+    return Rank(users.get(user_id, Rank.UNKOWN))

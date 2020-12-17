@@ -2,10 +2,10 @@ import random
 
 import telebot
 from telebot import apihelper
-from telebot.types import CallbackQuery
+from telebot.types import CallbackQuery, Message
 
 import config
-from auth import allowed, get_rank, get_ranks
+from auth import allowed, get_rank, get_user_ranks, Rank
 from userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
@@ -26,13 +26,23 @@ my_id = bot.get_me().id
 # status = server.status()
 # status.players.online
 
+def check_allowed(m: Message, rank: Rank):
+    if allowed(m.from_user.id, rank):
+        return True
+
+    bot.send_message(
+        m.chat.id,
+        f"Sorry {m.from_user.first_name}, but your rank {get_rank(m.from_user.id).name} is not high enough"
+    )
+    return False
+
 
 @bot.middleware_handler(update_types=['message'])
 def log_user(bot_instance, m):
     log_contact(m.from_user)
 
 
-@bot.message_handler(func=lambda query: not allowed(query))
+@bot.message_handler(func=lambda query: not allowed(query.from_user.id))
 def block_forbidden(m):
     user_id = m.from_user.id
     print(f"Forbidden attempt from {user_id}")
@@ -85,17 +95,7 @@ def show_cmd(m):
     )
 
 
-# -- debug commands
-
-@bot.message_handler(commands=['list_contacts'])
-def list_contacts(m):
-    bot.send_message(m.chat.id, get_contacts())
-
-
-@bot.message_handler(commands=['list_ranks'])
-def list_ranks(m):
-    bot.send_message(m.chat.id, f"Users: {get_ranks()}")
-
+# -- mc server stuff
 
 @bot.callback_query_handler(func=lambda call: call.data == 'status')
 @bot.message_handler(commands=['status'])
@@ -109,11 +109,30 @@ def status_command(m):
     )
 
 
+# -- debug commands
+
+
 @bot.message_handler(commands=['rank'])
 def rank_command(m):
     user_id = m.from_user.id
     rank = get_rank(user_id)
-    bot.reply_to(m, f'Your id is {user_id}, you are {rank}')
+    bot.reply_to(m, f'Your id is {user_id}, you are {rank.name}')
+
+
+@bot.message_handler(commands=['list_ranks'])
+def list_user_ranks(m):
+    if not check_allowed(m, Rank.ADMIN):
+        return
+
+    bot.send_message(m.chat.id, f"Users: {get_user_ranks()}")
+
+
+@bot.message_handler(commands=['list_contacts'])
+def list_contacts(m):
+    if not check_allowed(m, Rank.ADMIN):
+        return
+
+    bot.send_message(m.chat.id, get_contacts())
 
 
 # --- fallback handlers
