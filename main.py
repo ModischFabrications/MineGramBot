@@ -5,7 +5,7 @@ from telebot import apihelper
 from telebot.types import CallbackQuery
 
 import config
-from auth import allowed, get_rank, get_admins, get_users
+from auth import allowed, get_rank, get_ranks
 from userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
@@ -32,12 +32,13 @@ def log_user(bot_instance, m):
     log_contact(m.from_user)
 
 
-@bot.message_handler(func=lambda query: allowed(query))
+@bot.message_handler(func=lambda query: not allowed(query))
 def block_forbidden(m):
-    print(f"Forbidden attempt from {m.from_user.id}")
+    user_id = m.from_user.id
+    print(f"Forbidden attempt from {user_id}")
     bot.send_message(
         m.chat.id,
-        f"Sorry {m.from_user.first_name}, but you are not a registered user (ID: {m.from_user.id})"
+        f"Sorry {m.from_user.first_name}, but you are {get_rank(user_id).name} (ID: {user_id})"
     )
 
 
@@ -45,31 +46,31 @@ def block_forbidden(m):
 def joined_group_command(m):
     if m.content_type == 'group_chat_created' or (
             m.content_type == 'new_chat_members' and m.new_chat_members[0].id == my_id):
-        bot.send_message(m.chat.id, 'Thanks for inviting me to this group!')
+        bot.send_message(m.chat.id, 'Thanks for inviting me to this group! Send /start for more')
 
-    cmd_command(m)
+    show_cmd(m)
 
 
-@bot.message_handler(commands=['welcome', 'start', 'hello', 'help', 'h'])
+@bot.message_handler(commands=['welcome', 'start', 'help', 'h'])
 def welcome_command(m):
     if m.chat.type == "private":
         bot.send_message(m.chat.id,
-                         f'Greetings {m.from_user.first_name}, your are {get_rank(m.from_user.id)}!')
+                         f'Greetings {m.from_user.first_name}, your are {get_rank(m.from_user.id).name}!')
     elif m.chat.type in ("group", "supergroup"):
-        bot.send_message(m.chat.id, 'Hello there everyone')
+        bot.send_message(m.chat.id, 'Hello again everyone, I am ModischMinecraftBot')
     else:
         bot.send_message(m.chat.id, "Where am I?")
 
     bot.send_message(
         m.chat.id,
         f'I can start and stop a minecraft server for you.\n' +
-        'To get this message again send /start.\n'
+        'Send /start to get this message again.\n'
     )
-    cmd_command(m)
+    show_cmd(m)
 
 
 @bot.message_handler(commands=['cmd', "commands", "c"])
-def cmd_command(m):
+def show_cmd(m):
     keyboard = telebot.types.InlineKeyboardMarkup()
     keyboard.row(
         telebot.types.InlineKeyboardButton("/start_server", callback_data='start_server'),
@@ -84,6 +85,8 @@ def cmd_command(m):
     )
 
 
+# -- debug commands
+
 @bot.message_handler(commands=['list_contacts'])
 def list_contacts(m):
     bot.send_message(m.chat.id, get_contacts())
@@ -91,14 +94,14 @@ def list_contacts(m):
 
 @bot.message_handler(commands=['list_ranks'])
 def list_ranks(m):
-    bot.send_message(m.chat.id, f"Users: {get_users()}\nAdmins: {get_admins()}")
+    bot.send_message(m.chat.id, f"Users: {get_ranks()}")
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'status')
 @bot.message_handler(commands=['status'])
 def status_command(m):
     if type(m) == CallbackQuery:
-        m = m.m
+        m = m.message
 
     bot.send_message(
         m.chat.id,
@@ -119,7 +122,7 @@ def rank_command(m):
 def test_callback(call):
     print(f"Callback: {call}")
     bot.send_message(
-        call.m.chat.id,
+        call.message.chat.id,
         f"{call.data} is not implemented yet..."
     )
 
@@ -139,7 +142,6 @@ def fallback(m):
 def main():
     print("Starting up...")
     print(f"My API status: {bot.get_me()}")
-    print(f"Admins: {config.ADMINS}")
     bot.polling(none_stop=True)
 
 
