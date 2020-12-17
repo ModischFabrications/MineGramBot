@@ -8,13 +8,13 @@ from telebot.types import User
 chat_partners: Dict[int, User] = {}
 
 
-def add_user(user: User):
+def log_contact(user: User):
     chat_partners[user.id] = user
 
 
-def print_users():
+def get_contacts():
     txt_out = "["
     for uid, user in chat_partners.items():
         txt_out += f"{user.first_name} {user.last_name} ({user.username}): {uid}, "
     txt_out += "]"
-    print(txt_out)
+    return txt_out

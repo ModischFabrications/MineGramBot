@@ -23,37 +23,17 @@ A: Because I can't access executables (minecraft!) from inside a container
 ## Dev notes
 
 ### Roadmap
-resolve names to ids: search group for name, return id, group only implicit conversion 
-
-get rank of all users
--> \rank Robin =>\rank 213243
-
-check isUser first and block access if not
-https://github.com/eternnoir/pyTelegramBotAPI#middleware-handler
-
-"You are not allowed, ask an admin to add {ID} to users"
--> add at runtime via admin command? 
-/allow ID    /forbid ID
--> would need a persistent store 
--> would make config useless? 
--> Maybe only admin via config and users at runtime
--> local user database
-
-differentiate between private chat and group
--> "thanks for inviting me here" vs "hello {user}"
-if message.chat.type == "private":
-	# private chat message
-
-elif message.chat.type in ("group", "supergroup"):
-	# group chat message
 
 check server status (online/offline, n_players, uptime)
--> verbose mode prints joined players
--> would need \hide (me) for privacy minded people
+-> verbose mode prints joined players -> would need \hide (me) for privacy minded people
 
 Start/save/stop server/service -> needs to be able to type commands in screen OR start server here
 
 --> /say group messages in minecraft
+
+resolve names to ids: search group for name, return id, group only implicit conversion -> message entity type "mention"
+
+get rank of all users -> \rank Robin =>\rank 213243
 
 eastereggs (send fortnite dancing steve gif?)
 

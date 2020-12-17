@@ -5,11 +5,13 @@ from telebot import apihelper
 from telebot.types import CallbackQuery
 
 import config
-from auth import allowed
-from userLog import add_user, print_users
+from auth import allowed, get_rank, get_admins, get_users
+from userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(config.TOKEN)
+
+my_id = bot.get_me().id
 
 
 # if verbose: send updates on change
@@ -26,103 +28,89 @@ bot = telebot.TeleBot(config.TOKEN)
 
 
 @bot.middleware_handler(update_types=['message'])
-def log_user(bot_instance, message):
-    add_user(message.from_user)
-    print_users()
+def log_user(bot_instance, m):
+    log_contact(m.from_user)
 
 
 @bot.message_handler(func=lambda query: allowed(query))
-def block_forbidden(message):
-    print(f"Forbidden attempt from {message.from_user.id}")
+def block_forbidden(m):
+    print(f"Forbidden attempt from {m.from_user.id}")
     bot.send_message(
-        message.chat.id,
-        f"Sorry {message.from_user.first_name}, but you are not a registered user (ID: {message.from_user.id})"
+        m.chat.id,
+        f"Sorry {m.from_user.first_name}, but you are not a registered user (ID: {m.from_user.id})"
     )
 
 
-@bot.message_handler(commands=['start', 'hello', 'help', 'h'])
-def start_command(message):
+@bot.message_handler(content_types=['new_chat_members', 'group_chat_created'])
+def joined_group_command(m):
+    if m.content_type == 'group_chat_created' or (
+            m.content_type == 'new_chat_members' and m.new_chat_members[0].id == my_id):
+        bot.send_message(m.chat.id, 'Thanks for inviting me to this group!')
+
+    cmd_command(m)
+
+
+@bot.message_handler(commands=['welcome', 'start', 'hello', 'help', 'h'])
+def welcome_command(m):
+    if m.chat.type == "private":
+        bot.send_message(m.chat.id,
+                         f'Greetings {m.from_user.first_name}, your are {get_rank(m.from_user.id)}!')
+    elif m.chat.type in ("group", "supergroup"):
+        bot.send_message(m.chat.id, 'Hello there everyone')
+    else:
+        bot.send_message(m.chat.id, "Where am I?")
+
     bot.send_message(
-        message.chat.id,
-        f'Greetings {message.from_user.first_name}! \n'
+        m.chat.id,
         f'I can start and stop a minecraft server for you.\n' +
-        'To start send /start.\n' +
-        'To stop send /stop.\n' +
-        'To get help press /help.'
+        'To get this message again send /start.\n'
     )
-    cmd_command(message)
+    cmd_command(m)
 
 
 @bot.message_handler(commands=['cmd', "commands", "c"])
-def cmd_command(message):
+def cmd_command(m):
     keyboard = telebot.types.InlineKeyboardMarkup()
     keyboard.row(
-        telebot.types.InlineKeyboardButton("help", callback_data='help'),
-        telebot.types.InlineKeyboardButton("status", callback_data='status'),
-        telebot.types.InlineKeyboardButton("rank", callback_data='rank')
-    )
-    keyboard.row(
-        telebot.types.InlineKeyboardButton("start_server", callback_data='start_server'),
-        telebot.types.InlineKeyboardButton("stop_server", callback_data='stop_server')
+        telebot.types.InlineKeyboardButton("/start_server", callback_data='start_server'),
+        telebot.types.InlineKeyboardButton("/status", callback_data='status'),
+        telebot.types.InlineKeyboardButton("/stop_server", callback_data='stop_server')
     )
 
     bot.send_message(
-        message.chat.id,
+        m.chat.id,
         f'Commands:',
         reply_markup=keyboard
     )
 
 
+@bot.message_handler(commands=['list_contacts'])
+def list_contacts(m):
+    bot.send_message(m.chat.id, get_contacts())
+
+
+@bot.message_handler(commands=['list_ranks'])
+def list_ranks(m):
+    bot.send_message(m.chat.id, f"Users: {get_users()}\nAdmins: {get_admins()}")
+
+
 @bot.callback_query_handler(func=lambda call: call.data == 'status')
 @bot.message_handler(commands=['status'])
-def status_command(message):
-    if type(message) == CallbackQuery:
-        message = message.message
+def status_command(m):
+    if type(m) == CallbackQuery:
+        m = m.m
 
     bot.send_message(
-        message.chat.id,
-        f'I am still alive.\n Server status is {"NOT IMPLEMENTED"}'
+        m.chat.id,
+        f'Server status is {"unknown"}'
     )
 
 
 @bot.message_handler(commands=['rank'])
-def rank_command(message):
-    user_id = message.from_user.id
-
-    if user_id in config.ADMINS:
-        rank = "ADMIN"
-    elif user_id in config.USERS:
-        rank = "USER"
-    else:
-        rank = "Noone"
-
-    bot.reply_to(message, f'Your id is {user_id}, you are {rank}')
-
-
-@bot.message_handler(commands=['echo'])
-def echo_command(message):
-    bot.reply_to(message, f'You said {message.text}')
-
-
-@bot.message_handler(commands=['test'])
-def help_command(message):
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(
-        telebot.types.InlineKeyboardButton(
-            "Message the developer", url='telegram.me/RobinMod'
-        )
-    )
-    bot.send_message(
-        message.chat.id,
-        '1) To receive a list of available currencies press /exchange.\n' +
-        '2) Click on the currency you are interested in.\n' +
-        '3) You will receive a message containing information regarding the source and the target currencies, ' +
-        'buying rates and selling rates.\n' +
-        '4) Click “Update” to receive the current information regarding the request. ' +
-        'The bot will also show the difference between the previous and the current exchange rates.\n' +
-        '5) The bot supports inline. Type @<botusername> in any chat and the first letters of a currency.',
-        reply_markup=keyboard
-    )
+def rank_command(m):
+    user_id = m.from_user.id
+    rank = get_rank(user_id)
+    bot.reply_to(m, f'Your id is {user_id}, you are {rank}')
 
 
 # --- fallback handlers
@@ -131,16 +119,21 @@ def help_command(message):
 def test_callback(call):
     print(f"Callback: {call}")
     bot.send_message(
-        call.message.chat.id,
+        call.m.chat.id,
         f"{call.data} is not implemented yet..."
     )
 
 
 # last one by design!
 @bot.message_handler(content_types=['text'])
-def fallback(message):
+def fallback_text(m):
     answer = ("sorry?", "pardon?", "what?", "no idea...")
-    bot.send_message(message.chat.id, f"{random.choice(answer)} Might want to get /help")
+    bot.send_message(m.chat.id, f"{random.choice(answer)} Might want to get /help")
+
+
+@bot.message_handler()
+def fallback(m):
+    print(m)
 
 
 def main():
