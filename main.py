@@ -1,4 +1,6 @@
+import math
 import random
+import time
 
 import telebot
 from telebot import apihelper
@@ -7,12 +9,15 @@ from telebot.types import Message
 import config
 from modules.auth import allowed, get_rank, get_user_ranks, Rank
 from modules.mc_server_observer import get_status
+from modules.mc_server_adapter import start_server
 from modules.userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(config.TOKEN)
 
 my_id = bot.get_me().id
+
+last_start = -math.inf
 
 
 def forbidden_access(m: Message, rank: Rank):
@@ -125,6 +130,15 @@ def status_command(m):
 def start_server_command(m):
     if forbidden_access(m, Rank.OP):
         return
+
+    global last_start
+    now = time.perf_counter()
+    if now - last_start < config.CMD_COOLDOWN_S:
+        bot.reply_to(m, "Can't do, server is still starting...")
+        return
+    last_start = now
+
+    start_server()
 
     bot.send_message(
         m.chat.id,
