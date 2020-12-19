@@ -12,7 +12,8 @@ class Rank(IntEnum):
     BLOCKED = -1
     UNKOWN = 0
     USER = 1
-    ADMIN = 2
+    OP = 2
+    ADMIN = 3
 
 
 # TODO: use persistent storage
@@ -34,5 +35,5 @@ def get_user_ranks():
     return {uid: rank.name for (uid, rank) in users.items()}
 
 
-def get_rank(user_id):
+def get_rank(user_id) -> Rank:
     return Rank(users.get(user_id, Rank.UNKOWN))
