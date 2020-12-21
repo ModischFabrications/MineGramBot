@@ -8,8 +8,8 @@ from telebot.types import Message
 
 import config
 from modules.auth import allowed, get_rank, get_user_ranks, Rank
-from modules.mc_server_observer import get_status
 from modules.mc_server_adapter import start_server
+from modules.mc_server_observer import get_status
 from modules.userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
@@ -142,8 +142,9 @@ def start_server_command(m):
 
     bot.send_message(
         m.chat.id,
-        f"start_server isn't done yet, sorry"
+        f"server is starting..."
     )
+    # TODO: check status after delay and update message?
 
 
 @bot.message_handler(commands=['stop_server'])

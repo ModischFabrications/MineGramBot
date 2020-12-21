@@ -3,12 +3,13 @@
 ## Install
 1. Download/checkout
 2. cd into directory
-3. pipenv install
-4. add/change config.py
-5. add main.py to your autostart of choice
+3. add/change config.py
+4. (pipenv install)
+5. add `pipenv run main.py` to your autostart of choice
+6. contact @ModischMinecraftBot on telegram
 
 ## Commands
-- hello/h/help/start (start is called by telegram on startup)
+- /start (start is called by telegram on first contact)
 - c/cmd/commands
 - rank [ID]
 - start_server
@@ -24,15 +25,13 @@ A: Because I can't access executables (minecraft!) from inside a container
 
 ### Roadmap
 
-check server status (online/offline, n_players, uptime)
--> verbose mode prints joined players -> would need \hide (me) for privacy minded people
+check server status (n_players, uptime)
+-> verbose mode prints joined players
 
 Start/save/stop server/service -> needs to be able to type commands in screen OR start server here
-
 --> /say group messages in minecraft
 
 resolve names to ids: search group for name, return id, group only implicit conversion -> message entity type "mention"
-
 get rank of all users -> \rank Robin =>\rank 213243
 
 eastereggs (send fortnite dancing steve gif?)
