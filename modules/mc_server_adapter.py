@@ -8,5 +8,5 @@ def start_server():
     if not command:
         raise AttributeError("command missing!")
 
-    process = subprocess.run(config.COMMAND, capture_output=True, text=True)
+    process = subprocess.run(config.COMMAND, shell=True, capture_output=True, text=True)
     print(process)
