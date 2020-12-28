@@ -25,9 +25,6 @@ A: Because I can't access executables (minecraft!) from inside a container
 
 ### Roadmap
 
-check server status (n_players, uptime)
--> verbose mode prints joined players
-
 Start/save/stop server/service -> needs to be able to type commands in screen OR start server here
 --> /say group messages in minecraft
 

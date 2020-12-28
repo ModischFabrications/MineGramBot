@@ -38,6 +38,7 @@ def _fetch_state() -> PingResponse:
 
 
 def is_online():
+    # could also use server.ping()
     return get_status() == State.ONLINE
 
 
@@ -79,6 +80,7 @@ def get_query():
     """needs query = enabled in server.properties, but exposes everything"""
     return server.query()
 
+# result.raw['modinfo']['modList']
 
 # query = server.query()
 # query.players.names
