@@ -124,7 +124,7 @@ def status_command(m):
         f'Server status is [querying]'
     )
 
-    bot.edit_message_text(f'Server status is {get_status()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
+    bot.edit_message_text(f'Server is {get_status()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
 
 
 @bot.message_handler(commands=['start_server'])

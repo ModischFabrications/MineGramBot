@@ -14,7 +14,11 @@ def get_status():
     try:
         return server.status()
     except ConnectionRefusedError:
-        return "Offline"
+        # nothing there
+        return "offline"
+    except BrokenPipeError:
+        # there, but unable to handle request
+        return "still starting"
 
 
 def get_query():
