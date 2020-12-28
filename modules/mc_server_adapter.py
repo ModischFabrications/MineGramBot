@@ -10,8 +10,8 @@ def start_server():
 
     # this is not nice form, but easier than creating a dedicated startup script
     # no shell escape! Make sure no garbage is passed!
-    process = subprocess.run(config.COMMAND_START, shell=True)
-    print(process)
+    process = subprocess.run(config.COMMAND_START, shell=True, check=True)
+    # print(process)
 
 
 def stop_server():
@@ -21,6 +21,5 @@ def stop_server():
 
     # this is not nice form, but easier than creating a dedicated startup script
     # no shell escape! Make sure no garbage is passed!
-    process = subprocess.run(config.COMMAND_STOP, shell=True)
-    print(process)
-
+    process = subprocess.run(config.COMMAND_STOP, shell=True, check=True)
+    # print(process)

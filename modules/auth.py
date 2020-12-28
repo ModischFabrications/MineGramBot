@@ -7,7 +7,7 @@ import config
 # only class to know about authentication (config.USERS)
 # knows nothing about telebot and messages!
 
-
+# matrix of permissions might be even cooler
 class Rank(IntEnum):
     BLOCKED = -1
     UNKOWN = 0

@@ -3,9 +3,9 @@
 ## Install
 1. Download/checkout
 2. cd into directory
-3. add/change config.py
-4. (pipenv install)
-5. add `pipenv run main.py` to your autostart of choice
+3. add and customize config.py from *.template
+4. `pipenv install`
+5. add `start.sh` or anything similar to your autostart of choice
 6. contact @ModischMinecraftBot on telegram
 
 ## Commands

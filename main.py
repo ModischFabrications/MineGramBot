@@ -10,7 +10,7 @@ from telebot.types import Message
 import config
 from modules.auth import allowed, get_rank, get_user_ranks, Rank
 from modules.mc_server_adapter import start_server, stop_server
-from modules.mc_server_observer import get_status
+from modules.mc_server_observer import get_status_str
 from modules.userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
@@ -124,7 +124,7 @@ def status_command(m):
         f'Server status is [querying]'
     )
 
-    bot.edit_message_text(f'Server is {get_status()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
+    bot.edit_message_text(f'Server is {get_status_str()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
 
 
 @bot.message_handler(commands=['start_server'])
