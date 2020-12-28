@@ -143,9 +143,9 @@ def start_server_command(m):
 
     bot.send_message(
         m.chat.id,
-        f"server is starting..."
+        f"Server is starting up, wait a few minutes..."
     )
-    # TODO: check status after delay and update message?
+    # TODO: check is_online every 30s and update message
 
 
 @bot.message_handler(commands=['stop_server'])
