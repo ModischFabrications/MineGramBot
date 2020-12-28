@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import math
 import random
 import time
@@ -8,7 +9,7 @@ from telebot.types import Message
 
 import config
 from modules.auth import allowed, get_rank, get_user_ranks, Rank
-from modules.mc_server_adapter import start_server
+from modules.mc_server_adapter import start_server, stop_server
 from modules.mc_server_observer import get_status
 from modules.userLog import log_contact, get_contacts
 
@@ -152,9 +153,11 @@ def stop_server_command(m):
     if forbidden_access(m, Rank.OP):
         return
 
+    stop_server()
+
     bot.send_message(
         m.chat.id,
-        f"start_server isn't done yet, sorry"
+        f"Server is terminating..."
     )
 
 
