@@ -29,10 +29,10 @@ def _fetch_state() -> PingResponse:
     global last_state, last_fetched
     now = time.time()
     if (now - last_fetched) < cache_time__s and last_state is not None:
-        print("using cached value")
+        # print("using cached value")
         return last_state
 
-    print(f"Fetching status for {LOCAL_ADDRESS}")
+    # print(f"Fetching status for {LOCAL_ADDRESS}")
     last_state = server.status()
     last_fetched = time.time()
     return last_state

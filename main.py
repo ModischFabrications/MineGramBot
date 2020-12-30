@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-import math
 import random
-import time
 
 import telebot
 from telebot import apihelper
@@ -11,14 +9,13 @@ import config
 from modules.auth import allowed, get_rank, get_user_ranks, Rank
 from modules.mc_server_adapter import start_server, stop_server
 from modules.mc_server_observer import get_state_str, get_state, State
+from modules.observer_scheduling import call_when_online
 from modules.userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(config.TOKEN)
 
 my_id = bot.get_me().id
-
-last_start = -math.inf
 
 
 def forbidden_access(m: Message, rank: Rank):
@@ -132,20 +129,10 @@ def start_server_command(m):
     if forbidden_access(m, Rank.OP):
         return
 
-    state = get_state()
-    if state == State.STARTING:
-        bot.reply_to(m, "server is already starting..")
+    state = get_state()[0]
+    if state != State.OFFLINE:
+        bot.reply_to(m, f"server is {get_state_str()}")
         return
-    elif state == State.ONLINE:
-        bot.reply_to(m, "server is already running")
-
-    # should never be reached due to the first check?
-    global last_start
-    now = time.perf_counter()
-    if now - last_start < config.CMD_COOLDOWN_S:
-        bot.reply_to(m, "Server is still starting but unresponsive, wait a bit longer...")
-        return
-    last_start = now
 
     start_server()
 
@@ -153,23 +140,13 @@ def start_server_command(m):
         m.chat.id,
         f"Server is starting up, wait a few minutes..."
     )
+    on_success = lambda: bot.edit_message_text(f'Server is {get_state_str()}', chat_id=msg_send.chat.id,
+                                               message_id=msg_send.message_id)
 
-    # try:
-    #     await asyncio.wait_for(block_until_ready(), 30)
-    #     bot.edit_message_text(f'Server is {get_state_str()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
-    # except asyncio.TimeoutError:
-    #     bot.edit_message_text(f'Server is unresponsive, state is unknown', chat_id=msg_send.chat.id,
-    #                           message_id=msg_send.message_id)
+    on_error = lambda: bot.edit_message_text(f'Server is unresponsive, state is unknown', chat_id=msg_send.chat.id,
+                                             message_id=msg_send.message_id)
 
-
-# async def block_until_ready():
-#     state = get_state()
-#     if state != State.STARTING:
-#         raise RuntimeError(f"Server is {state}, starting was expected")
-#
-#     # 10min
-#     while not is_online():
-#         await asyncio.sleep(10)
+    call_when_online(on_success, on_error)
 
 
 @bot.message_handler(commands=['stop_server'])
