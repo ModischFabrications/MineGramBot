@@ -6,7 +6,7 @@ from modules.mc_server_observer import State, MCServerObserver
 
 class MCServerObserverScheduler:
     _CHECK_WAIT_S = 10
-    _MAX_TRIES = (.5 * 60) / _CHECK_WAIT_S
+    _MAX_TRIES = (5 * 60) / _CHECK_WAIT_S
 
     def __init__(self, observer: MCServerObserver):
         self._observer = observer
@@ -18,7 +18,7 @@ class MCServerObserverScheduler:
         # state = State.STARTING
 
         if state == State.ONLINE:
-            print("server online")
+            # print("server online")
             on_success()
             return
 
@@ -26,7 +26,7 @@ class MCServerObserverScheduler:
             if tries_left < 1:
                 on_timeout()
                 return
-            print("rescheduled call_when_online")
+            # print("rescheduled call_when_online")
             threading.Timer(self._CHECK_WAIT_S, self.call_when_online, [on_success, on_timeout, tries_left - 1]).start()
             return
 

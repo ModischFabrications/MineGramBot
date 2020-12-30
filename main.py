@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import random
+import time
 
 import telebot
 from telebot import apihelper
@@ -42,10 +43,14 @@ def log_user(bot_instance, m):
 def block_forbidden(m):
     user_id = m.from_user.id
     print(f"Forbidden attempt from {user_id}")
-    bot.send_message(
-        m.chat.id,
-        f"Sorry {m.from_user.first_name}, but you are {auth.get_rank(user_id).name} (ID: {user_id})"
-    )
+    bot.reply_to(m, f"Sorry {m.from_user.first_name}, but you are {auth.get_rank(user_id).name} (ID: {user_id})")
+
+
+@bot.message_handler(func=lambda query: (time.time() - query.date > 60))
+def ignore_old(m):
+    user_id = m.from_user.id
+    print(f"Old attempt from {user_id}")
+    bot.reply_to(m, f"Sorry {m.from_user.first_name}, but I was not running. Send again if it's still relevant")
 
 
 @bot.message_handler(content_types=['new_chat_members', 'group_chat_created'])
@@ -84,8 +89,8 @@ def show_cmd(m):
     keyboard = telebot.types.ReplyKeyboardMarkup()
     keyboard.row(
         telebot.types.KeyboardButton("/start_server"),
-        telebot.types.InlineKeyboardButton("/status"),
-        telebot.types.InlineKeyboardButton("/stop_server")
+        telebot.types.KeyboardButton("/status"),
+        telebot.types.KeyboardButton("/stop_server")
     )
 
     bot.send_message(
@@ -199,7 +204,7 @@ def list_contacts(m):
 @bot.message_handler(content_types=['text'])
 def fallback_text(m):
     answer = ("sorry?", "pardon?", "what?", "no idea...")
-    bot.send_message(m.chat.id, f"{random.choice(answer)} Might want to get /help")
+    bot.reply_to(m, f"{random.choice(answer)} Might want to get /help")
 
 
 @bot.message_handler()
