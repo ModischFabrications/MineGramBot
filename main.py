@@ -10,7 +10,7 @@ from telebot.types import Message
 import config
 from modules.auth import allowed, get_rank, get_user_ranks, Rank
 from modules.mc_server_adapter import start_server, stop_server
-from modules.mc_server_observer import get_status_str
+from modules.mc_server_observer import get_state_str, get_state, State
 from modules.userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
@@ -124,7 +124,7 @@ def status_command(m):
         f'Server status is [querying]'
     )
 
-    bot.edit_message_text(f'Server is {get_status_str()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
+    bot.edit_message_text(f'Server is {get_state_str()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
 
 
 @bot.message_handler(commands=['start_server'])
@@ -132,20 +132,44 @@ def start_server_command(m):
     if forbidden_access(m, Rank.OP):
         return
 
+    state = get_state()
+    if state == State.STARTING:
+        bot.reply_to(m, "server is already starting..")
+        return
+    elif state == State.ONLINE:
+        bot.reply_to(m, "server is already running")
+
+    # should never be reached due to the first check?
     global last_start
     now = time.perf_counter()
     if now - last_start < config.CMD_COOLDOWN_S:
-        bot.reply_to(m, "Can't do, server is still starting...")
+        bot.reply_to(m, "Server is still starting but unresponsive, wait a bit longer...")
         return
     last_start = now
 
     start_server()
 
-    bot.send_message(
+    msg_send = bot.send_message(
         m.chat.id,
         f"Server is starting up, wait a few minutes..."
     )
-    # TODO: check is_online every 30s and update message
+
+    # try:
+    #     await asyncio.wait_for(block_until_ready(), 30)
+    #     bot.edit_message_text(f'Server is {get_state_str()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
+    # except asyncio.TimeoutError:
+    #     bot.edit_message_text(f'Server is unresponsive, state is unknown', chat_id=msg_send.chat.id,
+    #                           message_id=msg_send.message_id)
+
+
+# async def block_until_ready():
+#     state = get_state()
+#     if state != State.STARTING:
+#         raise RuntimeError(f"Server is {state}, starting was expected")
+#
+#     # 10min
+#     while not is_online():
+#         await asyncio.sleep(10)
 
 
 @bot.message_handler(commands=['stop_server'])

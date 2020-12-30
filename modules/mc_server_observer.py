@@ -1,3 +1,4 @@
+import socket
 import time
 from enum import IntEnum
 from typing import Tuple, Optional
@@ -39,10 +40,10 @@ def _fetch_state() -> PingResponse:
 
 def is_online():
     # could also use server.ping()
-    return get_status() == State.ONLINE
+    return get_state()[0] == State.ONLINE
 
 
-def get_status() -> Tuple[State, Optional[PingResponse]]:
+def get_state() -> Tuple[State, Optional[PingResponse]]:
     """always works for newer servers, but won't expose everything"""
 
     try:
@@ -56,10 +57,10 @@ def get_status() -> Tuple[State, Optional[PingResponse]]:
         return State.STARTING, None
 
 
-def get_status_str() -> str:
+def get_state_str() -> str:
     """always works for newer servers, but won't expose everything"""
 
-    state, response = get_status()
+    state, response = get_state()
     if state == State.ONLINE:
         return _response_to_str(response)
     elif state == State.STARTING:
@@ -77,8 +78,12 @@ def _response_to_str(status: PingResponse) -> str:
 
 
 def get_query():
-    """needs query = enabled in server.properties, but exposes everything"""
-    return server.query()
+    """needs query = enabled in server.properties and open UDP port, but exposes everything"""
+    try:
+        return server.query()
+    except socket.timeout:
+        # UDP port not open or server not there
+        raise Exception("UDP port not open or server not there")
 
 # result.raw['modinfo']['modList']
 
