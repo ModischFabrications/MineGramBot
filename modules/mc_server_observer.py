@@ -6,15 +6,6 @@ from typing import Tuple, Optional
 from mcstatus import MinecraftServer
 from mcstatus.pinger import PingResponse
 
-from config import LOCAL_ADDRESS
-
-cache_time__s = 10
-
-server = MinecraftServer.lookup(LOCAL_ADDRESS)
-
-last_state = None
-last_fetched = 0
-
 
 class State(IntEnum):
     UNKOWN = 0
@@ -23,69 +14,70 @@ class State(IntEnum):
     ONLINE = 3
 
 
-# TODO: if verbose: send updates on change
+class MCServerObserver:
+    _cache_time__s = 10
 
-def _fetch_state() -> PingResponse:
-    global last_state, last_fetched
-    now = time.time()
-    if (now - last_fetched) < cache_time__s and last_state is not None:
-        # print("using cached value")
+    def __init__(self, local_address):
+        self._last_state = None
+        self._last_fetched = 0
+        self._server = MinecraftServer.lookup(local_address)
+
+    def _fetch_state(self) -> PingResponse:
+        now = time.time()
+        if (now - self._last_fetched) < self._cache_time__s and self._last_state is not None:
+            # print("using cached value")
+            return self._last_state
+
+        # print(f"Fetching status for {LOCAL_ADDRESS}")
+        last_state = self._server.status()
+        last_fetched = time.time()
         return last_state
 
-    # print(f"Fetching status for {LOCAL_ADDRESS}")
-    last_state = server.status()
-    last_fetched = time.time()
-    return last_state
+    def is_online(self):
+        # could also use server.ping()
+        return self.get_state()[0] == State.ONLINE
 
+    def get_state(self) -> Tuple[State, Optional[PingResponse]]:
+        """always works for newer servers, but won't expose everything"""
 
-def is_online():
-    # could also use server.ping()
-    return get_state()[0] == State.ONLINE
+        try:
+            state = self._fetch_state()
+            return State.ONLINE, state
+        except ConnectionRefusedError:
+            # nothing there
+            return State.OFFLINE, None
+        except BrokenPipeError:
+            # there, but unable to handle request
+            return State.STARTING, None
 
+    def get_state_str(self) -> str:
+        """always works for newer servers, but won't expose everything"""
 
-def get_state() -> Tuple[State, Optional[PingResponse]]:
-    """always works for newer servers, but won't expose everything"""
+        state, response = self.get_state()
+        if state == State.ONLINE:
+            return self._response_to_str(response)
+        elif state == State.STARTING:
+            return "still starting"
+        elif state == State.OFFLINE:
+            # nothing there
+            return "offline"
+        else:
+            return "unknown"
 
-    try:
-        state = _fetch_state()
-        return State.ONLINE, state
-    except ConnectionRefusedError:
-        # nothing there
-        return State.OFFLINE, None
-    except BrokenPipeError:
-        # there, but unable to handle request
-        return State.STARTING, None
+    @staticmethod
+    def _response_to_str(status: PingResponse) -> str:
+        s_players = f"{status.players.online}/{status.players.max}"
+        return f"online with {s_players} players ({status.latency:.0f}ms)"
 
+    def get_query(self):
+        """needs query = enabled in server.properties and open UDP port, but exposes everything"""
+        try:
+            return self._server.query()
+        except socket.timeout:
+            # UDP port not open or server not there
+            raise Exception("UDP port not open or server not there")
 
-def get_state_str() -> str:
-    """always works for newer servers, but won't expose everything"""
+    # result.raw['modinfo']['modList']
 
-    state, response = get_state()
-    if state == State.ONLINE:
-        return _response_to_str(response)
-    elif state == State.STARTING:
-        return "still starting"
-    elif state == State.OFFLINE:
-        # nothing there
-        return "offline"
-    else:
-        return "unknown"
-
-
-def _response_to_str(status: PingResponse) -> str:
-    s_players = f"{status.players.online}/{status.players.max}"
-    return f"online with {s_players} players ({status.latency:.0f}ms)"
-
-
-def get_query():
-    """needs query = enabled in server.properties and open UDP port, but exposes everything"""
-    try:
-        return server.query()
-    except socket.timeout:
-        # UDP port not open or server not there
-        raise Exception("UDP port not open or server not there")
-
-# result.raw['modinfo']['modList']
-
-# query = server.query()
-# query.players.names
+    # query = server.query()
+    # query.players.names

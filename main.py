@@ -8,14 +8,16 @@ from telebot.types import Message
 import config
 from modules.auth import allowed, get_rank, get_user_ranks, Rank
 from modules.mc_server_adapter import start_server, stop_server
-from modules.mc_server_observer import get_state_str, get_state, State
-from modules.observer_scheduling import call_when_online
+from modules.mc_server_observer import State, MCServerObserver
+from modules.observer_scheduling import MCServerObserverScheduler
 from modules.userLog import log_contact, get_contacts
 
 apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(config.TOKEN)
 
 my_id = bot.get_me().id
+
+observer = MCServerObserver(config.LOCAL_ADDRESS)
 
 
 def forbidden_access(m: Message, rank: Rank):
@@ -121,7 +123,8 @@ def status_command(m):
         f'Server status is [querying]'
     )
 
-    bot.edit_message_text(f'Server is {get_state_str()}', chat_id=msg_send.chat.id, message_id=msg_send.message_id)
+    bot.edit_message_text(f'Server is {observer.get_state_str()}', chat_id=msg_send.chat.id,
+                          message_id=msg_send.message_id)
 
 
 @bot.message_handler(commands=['start_server'])
@@ -129,9 +132,9 @@ def start_server_command(m):
     if forbidden_access(m, Rank.OP):
         return
 
-    state = get_state()[0]
+    state = observer.get_state()[0]
     if state != State.OFFLINE:
-        bot.reply_to(m, f"server is {get_state_str()}")
+        bot.reply_to(m, f"server is {observer.get_state_str()}")
         return
 
     start_server()
@@ -140,13 +143,13 @@ def start_server_command(m):
         m.chat.id,
         f"Server is starting up, wait a few minutes..."
     )
-    on_success = lambda: bot.edit_message_text(f'Server is {get_state_str()}', chat_id=msg_send.chat.id,
+    on_success = lambda: bot.edit_message_text(f'Server is {observer.get_state_str()}', chat_id=msg_send.chat.id,
                                                message_id=msg_send.message_id)
 
     on_error = lambda: bot.edit_message_text(f'Server is unresponsive, state is unknown', chat_id=msg_send.chat.id,
                                              message_id=msg_send.message_id)
 
-    call_when_online(on_success, on_error)
+    MCServerObserverScheduler(observer).call_when_online(on_success, on_error)
 
 
 @bot.message_handler(commands=['stop_server'])
