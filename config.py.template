@@ -1,0 +1,13 @@
+# Ask BotFather for yours
+TOKEN = "REPLACE_THIS_TEXT"
+
+# who is allowed to send which commands (check auth.Rank).
+# Telegram user IDs are visible in the web url: `.../im?p=u[USER_ID]_...`
+USERS = {TESTADMIN: 3, TESTADMIN: 2, TESTUSER: 1}
+
+# commands to start and stop the minecraft server
+COMMAND_START = "echo hello"  # "systemctrl start MC"
+COMMAND_STOP = "echo goodbye"  # "systemctrl start MC"
+
+# copy from your minecraft client
+LOCAL_ADDRESS = "localhost:25565"
