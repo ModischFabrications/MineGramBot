@@ -6,43 +6,45 @@ from telebot import apihelper
 from telebot.types import Message
 
 import config
-from modules.auth import allowed, get_rank, get_user_ranks, Rank
+from modules.auth import Rank, Auth
+from modules.contactLog import ContactLog
 from modules.mc_server_adapter import start_server, stop_server
 from modules.mc_server_observer import State, MCServerObserver
-from modules.observer_scheduling import MCServerObserverScheduler
-from modules.userLog import log_contact, get_contacts
+from modules.observer_scheduler import MCServerObserverScheduler
 
 apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(config.TOKEN)
 
 my_id = bot.get_me().id
 
+auth = Auth(config.USERS)
 observer = MCServerObserver(config.LOCAL_ADDRESS)
+userLog = ContactLog()
 
 
 def forbidden_access(m: Message, rank: Rank):
-    if allowed(m.from_user.id, rank):
+    if auth.allowed(m.from_user.id, rank):
         return False
 
     bot.reply_to(
         m,
-        f"Sorry {m.from_user.first_name}, but your rank {get_rank(m.from_user.id).name} is not high enough"
+        f"Sorry {m.from_user.first_name}, but your rank {auth.get_rank(m.from_user.id).name} is not high enough"
     )
     return True
 
 
 @bot.middleware_handler(update_types=['message'])
 def log_user(bot_instance, m):
-    log_contact(m.from_user)
+    userLog.log(m.from_user)
 
 
-@bot.message_handler(func=lambda query: not allowed(query.from_user.id))
+@bot.message_handler(func=lambda query: not auth.allowed(query.from_user.id))
 def block_forbidden(m):
     user_id = m.from_user.id
     print(f"Forbidden attempt from {user_id}")
     bot.send_message(
         m.chat.id,
-        f"Sorry {m.from_user.first_name}, but you are {get_rank(user_id).name} (ID: {user_id})"
+        f"Sorry {m.from_user.first_name}, but you are {auth.get_rank(user_id).name} (ID: {user_id})"
     )
 
 
@@ -57,7 +59,7 @@ def joined_group_command(m):
 
 @bot.message_handler(commands=['welcome', 'start', 'help', 'h'])
 def welcome_command(m):
-    urank = get_rank(m.from_user.id)
+    urank = auth.get_rank(m.from_user.id)
 
     if m.chat.type == "private":
         bot.send_message(m.chat.id,
@@ -171,7 +173,7 @@ def stop_server_command(m):
 @bot.message_handler(commands=['rank'])
 def rank_command(m):
     user_id = m.from_user.id
-    rank = get_rank(user_id)
+    rank = auth.get_rank(user_id)
     bot.reply_to(m, f'Your id is {user_id}, you are {rank.name}')
 
 
@@ -180,7 +182,7 @@ def list_user_ranks(m):
     if forbidden_access(m, Rank.ADMIN):
         return
 
-    bot.send_message(m.chat.id, f"Users: {get_user_ranks()}")
+    bot.send_message(m.chat.id, f"Users: {auth.get_user_ranks()}")
 
 
 @bot.message_handler(commands=['list_contacts'])
@@ -188,7 +190,7 @@ def list_contacts(m):
     if forbidden_access(m, Rank.ADMIN):
         return
 
-    bot.send_message(m.chat.id, get_contacts())
+    bot.send_message(m.chat.id, userLog.get())
 
 
 # --- fallback handlers
