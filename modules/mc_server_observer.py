@@ -57,7 +57,7 @@ class MCServerObserver:
         if state == State.ONLINE:
             return self._response_to_str(response)
         elif state == State.STARTING:
-            return "still starting"
+            return "starting"
         elif state == State.OFFLINE:
             # nothing there
             return "offline"

@@ -127,7 +127,7 @@ def show_ex_cmd(m):
 def status_command(m):
     msg_send = bot.send_message(
         m.chat.id,
-        f'Server status is [querying]'
+        f'Server status is [querying]..'
     )
 
     bot.edit_message_text(f'Server is {observer.get_state_str()}', chat_id=msg_send.chat.id,
@@ -141,7 +141,7 @@ def start_server_command(m):
 
     state = observer.get_state()[0]
     if state != State.OFFLINE:
-        bot.reply_to(m, f"server is {observer.get_state_str()}")
+        bot.reply_to(m, f"Server is already {observer.get_state_str()}")
         return
 
     start_server()
@@ -168,7 +168,7 @@ def stop_server_command(m):
 
     bot.send_message(
         m.chat.id,
-        f"Server is terminating..."
+        f"Server is terminating"
     )
 
 
