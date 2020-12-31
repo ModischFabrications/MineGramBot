@@ -17,6 +17,7 @@ keep_running = True
 def exit(sig, frame):
     global keep_running
     keep_running = False
+    raise KeyboardInterrupt
 
 
 signal.signal(signal.SIGINT, exit)
