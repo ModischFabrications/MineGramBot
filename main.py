@@ -95,6 +95,7 @@ def show_cmd(m):
     keyboard.row(
         telebot.types.KeyboardButton("/start_server"),
         telebot.types.KeyboardButton("/status"),
+        telebot.types.KeyboardButton("/players"),
         telebot.types.KeyboardButton("/stop_server")
     )
 
@@ -110,13 +111,14 @@ def show_ex_cmd(m):
     keyboard = telebot.types.ReplyKeyboardMarkup()
     keyboard.row(
         telebot.types.KeyboardButton("/start_server"),
-        telebot.types.InlineKeyboardButton("/status"),
-        telebot.types.InlineKeyboardButton("/stop_server")
+        telebot.types.KeyboardButton("/status"),
+        telebot.types.KeyboardButton("/players"),
+        telebot.types.KeyboardButton("/stop_server")
     )
     keyboard.row(
         telebot.types.KeyboardButton("/list_contacts"),
-        telebot.types.InlineKeyboardButton("/list_ranks"),
-        telebot.types.InlineKeyboardButton("/help")
+        telebot.types.KeyboardButton("/list_ranks"),
+        telebot.types.KeyboardButton("/help")
     )
 
     bot.send_message(
@@ -136,6 +138,17 @@ def status_command(m):
     )
 
     bot.edit_message_text(f'Server is {observer.get_state_str()}', chat_id=msg_send.chat.id,
+                          message_id=msg_send.message_id)
+
+
+@bot.message_handler(commands=['players', 'list_players'])
+def players_command(m):
+    msg_send = bot.send_message(
+        m.chat.id,
+        f'Player list is [querying]..'
+    )
+
+    bot.edit_message_text(f'Players: {observer.get_players()}', chat_id=msg_send.chat.id,
                           message_id=msg_send.message_id)
 
 

@@ -17,7 +17,8 @@ class State(IntEnum):
 class MCServerObserver:
     _cache_time__s = 10
 
-    def __init__(self, local_address):
+    def __init__(self, local_address: str):
+        """address from minecraft client as HOST:PORT"""
         self._last_state = None
         self._last_fetched = 0
         self._server = MinecraftServer.lookup(local_address)
@@ -69,15 +70,21 @@ class MCServerObserver:
         s_players = f"{status.players.online}/{status.players.max}"
         return f"online with {s_players} players ({status.latency:.0f}ms)"
 
-    def get_query(self):
-        """needs query = enabled in server.properties and open UDP port, but exposes everything"""
+    def get_players(self):
+        """needs enable-query=true in server.properties and open and forwarded UDP port for full list"""
+
+        state, response = self.get_state()
+
+        if state != State.ONLINE:
+            return "unknown, server not online"
+
         try:
-            return self._server.query()
+            all_players = self._server.query().players.names
+            # out = ""
+            # for player in all_players:
+            #    out += player
+            return all_players
         except socket.timeout:
-            # UDP port not open or server not there
-            raise Exception("UDP port not open or server not there")
-
-    # result.raw['modinfo']['modList']
-
-    # query = server.query()
-    # query.players.names
+            print("query failed, query not enabled or UDP port not open?")
+            some_players = response.players.sample
+            return some_players + "..?"
