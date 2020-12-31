@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import logging
 import random
 import time
 
 import telebot
+from requests.exceptions import ConnectionError
 from telebot import apihelper
 from telebot.types import Message
 
@@ -12,6 +14,9 @@ from modules.contactLog import ContactLog
 from modules.mc_server_adapter import start_server, stop_server
 from modules.mc_server_observer import State, MCServerObserver
 from modules.observer_scheduler import MCServerObserverScheduler
+
+logger = telebot.logger
+telebot.logger.setLevel(logging.INFO)  # Outputs debug messages to console.
 
 apihelper.ENABLE_MIDDLEWARE = True
 bot = telebot.TeleBot(config.TOKEN)
@@ -215,7 +220,14 @@ def fallback(m):
 def main():
     print("Starting up...")
     print(f"My API status: {bot.get_me()}")
-    bot.polling(none_stop=True)
+
+    while True:
+        # will still escape with CTRL + S and user errors, better than infinite_poll
+        try:
+            bot.polling(none_stop=True)
+        except ConnectionError as e:
+            print(f"TeleBot crashed with {e}! Restarting in 5 seconds...")
+            time.sleep(5)
 
 
 if __name__ == '__main__':
