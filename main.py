@@ -3,12 +3,23 @@
 import logging
 import platform
 import random
+import signal
 import time
 
 # pipenv decided to forbid specification of min versions
 py_version = platform.python_version_tuple()
 if int(py_version[0]) < 3 or int(py_version[1]) < 6:
     raise OSError("Python versions older than 3.6 are not supported")
+
+keep_running = True
+
+
+def exit(sig, frame):
+    global keep_running
+    keep_running = False
+
+
+signal.signal(signal.SIGINT, exit)
 
 import telebot
 from requests.exceptions import ConnectionError
@@ -241,8 +252,9 @@ def main():
     print("Starting up...")
     print(f"My API status: {bot.get_me()}")
 
-    while True:
-        # will still escape with CTRL + S and user errors, better than infinite_poll
+    # bot.infinity_polling()
+    # this version will still escape with CTRL + S and user errors
+    while keep_running:
         try:
             bot.polling(none_stop=True)
         except ConnectionError as e:
