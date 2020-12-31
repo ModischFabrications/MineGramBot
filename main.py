@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
+
 import logging
+import platform
 import random
 import time
+
+# pipenv decided to forbid specification of min versions
+py_version = platform.python_version_tuple()
+if int(py_version[0]) < 3 or int(py_version[1]) < 6:
+    raise OSError("Python versions older than 3.6 are not supported")
 
 import telebot
 from requests.exceptions import ConnectionError

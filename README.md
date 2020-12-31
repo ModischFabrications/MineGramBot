@@ -2,6 +2,8 @@
 
 ## Install
 
+Use Python 3.6 or higher!
+
 1. Download/checkout
 2. cd into directory
 3. add and customize config.py from *.template
@@ -31,10 +33,7 @@ Q: Why not start the jar directly? A: many hosts are build on custom launchers, 
 
 ### Roadmap
 
-list players
-
-Start/save/stop server/service -> needs to be able to type commands in screen OR start server here --> /say group
-messages in minecraft
+/say group messages in minecraft
 
 resolve names to ids: search group for name, return id, group only implicit conversion -> message entity type "mention"
 get rank of all users -> \rank Robin =>\rank 213243
