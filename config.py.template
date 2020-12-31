@@ -9,5 +9,8 @@ USERS = {TESTADMIN: 3, TESTADMIN: 2, TESTUSER: 1}
 COMMAND_START = "echo hello"  # "systemctrl start MC"
 COMMAND_STOP = "echo goodbye"  # "systemctrl start MC"
 
+# how long the server should wait for a server before it can be tried again
+MAX_TIME_TO_START__S = 5 * 60
+
 # copy from your minecraft client
 LOCAL_ADDRESS = "localhost:25565"

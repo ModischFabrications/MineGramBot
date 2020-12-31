@@ -10,8 +10,9 @@ from mcstatus.pinger import PingResponse
 class State(IntEnum):
     UNKOWN = 0
     OFFLINE = 1
-    STARTING = 2
-    ONLINE = 3
+    ASSUMED_STARTING = 2
+    PROVED_STARTING = 3
+    ONLINE = 4
 
 
 class MCServerObserver:
@@ -19,15 +20,21 @@ class MCServerObserver:
 
     def __init__(self, local_address: str):
         """address from minecraft client as HOST:PORT"""
-        self._last_state = None
+        self._last_reply = None
         self._last_fetched = 0
         self._server = MinecraftServer.lookup(local_address)
 
+        self._assumed_starting_until = 0
+
+    def assume_starting(self, seconds: int):
+        """Server won't respond after starting until the service is able to answer"""
+        self._assumed_starting_until = time.time() + seconds
+
     def _fetch_state(self) -> PingResponse:
         now = time.time()
-        if (now - self._last_fetched) < self._cache_time__s and self._last_state is not None:
+        if (now - self._last_fetched) < self._cache_time__s and self._last_reply is not None:
             # print("using cached value")
-            return self._last_state
+            return self._last_reply
 
         # print(f"Fetching status for {LOCAL_ADDRESS}")
         last_state = self._server.status()
@@ -45,11 +52,12 @@ class MCServerObserver:
             state = self._fetch_state()
             return State.ONLINE, state
         except ConnectionRefusedError:
-            # nothing there
+            # nothing there (yet?)
+            if self._assumed_starting_until > time.time(): return State.ASSUMED_STARTING, None
             return State.OFFLINE, None
         except BrokenPipeError:
             # there, but unable to handle request
-            return State.STARTING, None
+            return State.PROVED_STARTING, None
 
     def get_state_str(self) -> str:
         """always works for newer servers, but won't expose everything"""
@@ -57,7 +65,9 @@ class MCServerObserver:
         state, response = self.get_state()
         if state == State.ONLINE:
             return self._response_to_str(response)
-        elif state == State.STARTING:
+        elif state == State.ASSUMED_STARTING:
+            return "assumed to be starting"
+        elif state == State.PROVED_STARTING:
             return "starting"
         elif state == State.OFFLINE:
             # nothing there

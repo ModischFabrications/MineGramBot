@@ -161,6 +161,7 @@ def start_server_command(m):
         return
 
     start_server()
+    observer.assume_starting(config.MAX_TIME_TO_START__S)
 
     msg_send = bot.send_message(
         m.chat.id,

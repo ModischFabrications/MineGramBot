@@ -1,12 +1,13 @@
 import threading
 from typing import Callable
 
+from config import MAX_TIME_TO_START__S
 from modules.mc_server_observer import State, MCServerObserver
 
 
 class MCServerObserverScheduler:
     _CHECK_WAIT_S = 10
-    _MAX_TRIES = (5 * 60) / _CHECK_WAIT_S
+    _MAX_TRIES = MAX_TIME_TO_START__S / _CHECK_WAIT_S
 
     def __init__(self, observer: MCServerObserver):
         self._observer = observer
@@ -22,7 +23,7 @@ class MCServerObserverScheduler:
             on_success()
             return
 
-        if state == State.STARTING:
+        if state == State.PROVED_STARTING or state == State.ASSUMED_STARTING:
             if tries_left < 1:
                 on_timeout()
                 return
@@ -31,4 +32,4 @@ class MCServerObserverScheduler:
             return
 
         on_timeout()
-        raise RuntimeError(f"Server is {state.name}, starting was expected")
+        raise RuntimeError(f"Server is {state.name}, it should have been starting")
