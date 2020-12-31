@@ -10,7 +10,7 @@ from mcstatus.pinger import PingResponse
 # I can't prove that the server is starting until it actually answers any calls.
 # I therefore assume it to be until I get an answer or the timeout hits
 class State(IntEnum):
-    UNKOWN = 0
+    UNKNOWN = 0
     OFFLINE = 1
     ASSUMED_STARTING = 2
     PROVED_STARTING = 3
@@ -40,7 +40,7 @@ class MCServerObserver:
 
         # print(f"Fetching status for {LOCAL_ADDRESS}")
         last_state = self._server.status()
-        last_fetched = time.time()
+        self._last_fetched = time.time()
         return last_state
 
     def is_online(self):

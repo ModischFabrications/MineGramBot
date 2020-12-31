@@ -70,11 +70,11 @@ def joined_group_command(m):
 
 @bot.message_handler(commands=['welcome', 'start', 'help', 'h'])
 def welcome_command(m):
-    urank = auth.get_rank(m.from_user.id)
+    user_rank = auth.get_rank(m.from_user.id)
 
     if m.chat.type == "private":
         bot.send_message(m.chat.id,
-                         f'Greetings {m.from_user.first_name}, your are {urank.name.lower()}!')
+                         f'Greetings {m.from_user.first_name}, your are {user_rank.name.lower()}!')
     elif m.chat.type in ("group", "supergroup"):
         bot.send_message(m.chat.id, 'Hello again everyone, I am ModischMinecraftBot')
     else:
@@ -112,13 +112,13 @@ def add_c_row_admin(keyboard):
 
 @bot.message_handler(commands=['cmd', "commands", "c"])
 def show_cmd(m):
-    urank = auth.get_rank(m.from_user.id)
+    user_rank = auth.get_rank(m.from_user.id)
 
     keyboard = telebot.types.ReplyKeyboardMarkup()
 
-    if urank >= Rank.USER: add_c_row_users(keyboard)
-    if urank >= Rank.OP: add_c_row_op(keyboard)
-    if urank >= Rank.ADMIN: add_c_row_admin(keyboard)
+    if user_rank >= Rank.USER: add_c_row_users(keyboard)
+    if user_rank >= Rank.OP: add_c_row_op(keyboard)
+    if user_rank >= Rank.ADMIN: add_c_row_admin(keyboard)
 
     bot.send_message(
         m.chat.id,

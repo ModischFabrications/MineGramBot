@@ -5,7 +5,7 @@ from typing import Dict
 # matrix of permissions might be even cooler
 class Rank(IntEnum):
     BLOCKED = -1
-    UNKOWN = 0
+    UNKNOWN = 0
     USER = 1
     OP = 2
     ADMIN = 3
@@ -30,4 +30,4 @@ class Auth:
         return {uid: rank.name for (uid, rank) in self._users.items()}
 
     def get_rank(self, user_id) -> Rank:
-        return Rank(self._users.get(user_id, Rank.UNKOWN))
+        return Rank(self._users.get(user_id, Rank.UNKNOWN))
