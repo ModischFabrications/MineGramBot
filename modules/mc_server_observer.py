@@ -7,6 +7,8 @@ from mcstatus import MinecraftServer
 from mcstatus.pinger import PingResponse
 
 
+# I can't prove that the server is starting until it actually answers any calls.
+# I therefore assume it to be until I get an answer or the timeout hits
 class State(IntEnum):
     UNKOWN = 0
     OFFLINE = 1
