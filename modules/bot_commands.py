@@ -37,6 +37,9 @@ def forbidden_access(m: Message, rank: Rank):
     return True
 
 
+# -- commands
+# reply_to to direct commands, send_message for generic updates meant for everybody
+
 @bot.middleware_handler(update_types=['message'])
 def log_user(bot_instance, m):
     userLog.log(m.from_user)
@@ -83,41 +86,39 @@ def welcome_command(m):
         'Send /start to get this message again.\n'
     )
 
-    if urank == Rank.OP: show_cmd(m)
-    if urank == Rank.ADMIN: show_ex_cmd(m)
+    show_cmd(m)
+
+
+def add_c_row_users(keyboard):
+    keyboard.row(
+        telebot.types.KeyboardButton("/status"),
+        telebot.types.KeyboardButton("/players")
+    )
+
+
+def add_c_row_op(keyboard):
+    keyboard.row(
+        telebot.types.KeyboardButton("/start_server"),
+        telebot.types.KeyboardButton("/stop_server")
+    )
+
+
+def add_c_row_admin(keyboard):
+    keyboard.row(
+        telebot.types.KeyboardButton("/list_contacts"),
+        telebot.types.KeyboardButton("/list_ranks")
+    )
 
 
 @bot.message_handler(commands=['cmd', "commands", "c"])
 def show_cmd(m):
+    urank = auth.get_rank(m.from_user.id)
+
     keyboard = telebot.types.ReplyKeyboardMarkup()
-    keyboard.row(
-        telebot.types.KeyboardButton("/start_server"),
-        telebot.types.KeyboardButton("/status"),
-        telebot.types.KeyboardButton("/players"),
-        telebot.types.KeyboardButton("/stop_server")
-    )
 
-    bot.send_message(
-        m.chat.id,
-        f'What do you want me to do?',
-        reply_markup=keyboard
-    )
-
-
-@bot.message_handler(commands=['ex_cmd', "extended_commands", "xc"])
-def show_ex_cmd(m):
-    keyboard = telebot.types.ReplyKeyboardMarkup()
-    keyboard.row(
-        telebot.types.KeyboardButton("/start_server"),
-        telebot.types.KeyboardButton("/status"),
-        telebot.types.KeyboardButton("/players"),
-        telebot.types.KeyboardButton("/stop_server")
-    )
-    keyboard.row(
-        telebot.types.KeyboardButton("/list_contacts"),
-        telebot.types.KeyboardButton("/list_ranks"),
-        telebot.types.KeyboardButton("/help")
-    )
+    if urank >= Rank.USER: add_c_row_users(keyboard)
+    if urank >= Rank.OP: add_c_row_op(keyboard)
+    if urank >= Rank.ADMIN: add_c_row_admin(keyboard)
 
     bot.send_message(
         m.chat.id,
@@ -226,4 +227,4 @@ def fallback_text(m):
 
 @bot.message_handler()
 def fallback(m):
-    print(m)
+    logger.wa(f"Received unexpected message: {m}")

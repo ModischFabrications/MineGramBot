@@ -23,11 +23,11 @@ Don't try to start two bot instances with the same token at the same time!
 ## Commands
 
 - /start (start is called by telegram on first contact)
-- c/cmd/commands
-- rank [ID]
+- status
+- players
+- cmd
 - start_server
 - stop_server
-- status
 
 ## Q & A
 
