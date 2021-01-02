@@ -52,8 +52,14 @@ def block_forbidden(m):
     bot.reply_to(m, f"Sorry {m.from_user.first_name}, but you are {auth.get_rank(user_id).name} (ID: {user_id})")
 
 
+# @bot.message_handler(func=lambda query: (time.time() - query.date > 3600))
+# def ignore_very_old(m):
+#     user_id = m.from_user.id
+#     print(f"Very old attempt from {user_id}")
+
+
 @bot.message_handler(func=lambda query: (time.time() - query.date > 60))
-def ignore_old(m):
+def block_old(m):
     user_id = m.from_user.id
     print(f"Old attempt from {user_id}")
     bot.reply_to(m, f"Sorry {m.from_user.first_name}, but I was not running. Send again if it's still relevant")
