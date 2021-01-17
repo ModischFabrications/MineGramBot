@@ -5,6 +5,7 @@ import time
 import telebot
 from telebot import apihelper
 from telebot.types import Message
+from telebot.version import __version__
 
 import config
 from modules.auth import Rank, Auth
@@ -17,7 +18,9 @@ logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)  # Outputs debug messages to console.
 
 apihelper.ENABLE_MIDDLEWARE = True
+apihelper.SESSION_TIME_TO_LIVE = 5 * 60
 bot = telebot.TeleBot(config.TOKEN)
+logger.debug(f"Using telebot version {__version__}")
 
 my_state = bot.get_me()
 

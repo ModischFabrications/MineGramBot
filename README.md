@@ -18,7 +18,8 @@ Use Python 3.6 or higher!
 5. add this program to your autostart of choice (see `start.sh`)
 6. contact your bot instance on telegram or invite it into a group
 
-Don't try to start two bot instances with the same token at the same time!
+Don't try to start two bot instances with the same token at the same time and don't share token with anyone else!
+Request a new token from Godfather if you are unsure if your token has been used somewhere else.
 
 ## Commands
 
