@@ -10,7 +10,7 @@ COMMAND_START = "echo hello"  # "systemctrl start MC"
 COMMAND_STOP = "echo goodbye"  # "systemctrl start MC"
 
 # how long the bot should wait for a server before starting can be tried again
-MAX_TIME_TO_START__S = 5 * 60
+MAX_TIME_TO_START__S = 7 * 60
 
 # copy from your minecraft client
 LOCAL_ADDRESS = "localhost:25565"
