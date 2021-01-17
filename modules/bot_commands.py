@@ -77,7 +77,7 @@ def joined_group_command(m):
     show_cmd(m)
 
 
-@bot.message_handler(commands=['welcome', 'start', 'help', 'h'])
+@bot.message_handler(commands=['start', 'help', 'h'])
 def welcome_command(m):
     user_rank = auth.get_rank(m.from_user.id)
 
@@ -138,7 +138,7 @@ def show_cmd(m):
 
 # -- mc server stuff
 
-@bot.message_handler(commands=['status'])
+@bot.message_handler(commands=['status', 's'])
 def status_command(m):
     msg_send = bot.send_message(
         m.chat.id,
@@ -149,7 +149,7 @@ def status_command(m):
                           message_id=msg_send.message_id)
 
 
-@bot.message_handler(commands=['players', 'list_players'])
+@bot.message_handler(commands=['players', 'list_players', 'p'])
 def players_command(m):
     msg_send = bot.send_message(
         m.chat.id,

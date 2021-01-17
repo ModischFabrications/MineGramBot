@@ -1,8 +1,8 @@
 # MineGramBot
 
-A Telegram bot to start minecraft servers from chat messages. Able to communicate by direct message or from a group
-chat. Implements basic user identification to prevent unauthorized use. Won't store or share any details about chats,
-groups or anything, should be fully GDPR conform!
+A Telegram bot to start minecraft servers from chat messages. It is able to answer direct messages or commands from a
+group chat. It implements basic user identification to prevent unauthorized use. It won't store or share any details
+about chats, groups or anything (why should it?), so it should be fully GDPR conform!
 
 Based on [PyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI)
 and [McStatus](https://github.com/Dinnerbone/mcstatus), this bot wouldn't exist without them.
@@ -18,28 +18,30 @@ Use Python 3.6 or higher!
 5. add this program to your autostart of choice (see `start.sh`)
 6. contact your bot instance on telegram or invite it into a group
 
-Don't try to start two bot instances with the same token at the same time and don't share token with anyone else!
+Don't try to start two bot instances with the same token at the same time and don't share your token with anyone else!
 Request a new token from Godfather if you are unsure if your token has been used somewhere else.
 
 ## Commands
 
-- /start (start is called by telegram on first contact)
-- status
-- players
-- cmd
-- start_server
-- stop_server
+Commands are displayed as a custom keyboard whenever you send /help to the bot, the following list is a summary:
+
+- /start
+- /commands
+- /status
+- /players
+- /start_server
+- /stop_server
 
 ## Q & A
 
-Q: Why no docker?  
+Q: Why are you not using docker like all the (other) cool kids?  
 A: I can't access host executables (minecraft) from inside a container
 
-Q: Why not start the jar directly?  
-A: Many minecraft launchers use custom launchers, don't want to break that
+Q: Why are you not starting the .jar directly?  
+A: Many minecraft versions use custom launchers, don't want to break that
 
-Q Why no /say commands or message bridge?  
-A: I can't pass commands to or read output from the running server instance
+Q Why are you not allowing /say commands or bridge messages?  
+A: I can't pass commands to or read output from the running server instance because it's hidden behind the custom call.
 
 ## References
 
@@ -54,7 +56,9 @@ similar implementations:
 ### Telegram API lib comparison
 
 - https://python-telegram-bot.org/ -> oldest, feels clunky
-- https://github.com/aiogram/aiogram -> best, but least tutorials
-- **https://github.com/eternnoir/pyTelegramBotAPI** -> nice midway
+- https://github.com/aiogram/aiogram -> fast and async, but few tutorials
+- **https://github.com/eternnoir/pyTelegramBotAPI** -> nice midway and working
+  flawlessly <sub><sup><sub><sup>[after bug hunting](https://github.com/eternnoir/pyTelegramBotAPI/issues/1058)
+  . </sup></sub></sup></sub> 
 
 
