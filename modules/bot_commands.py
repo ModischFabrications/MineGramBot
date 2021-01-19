@@ -191,7 +191,13 @@ def stop_server_command(m):
     if forbidden_access(m, Rank.OP):
         return
 
+    state = observer.get_state()[0]
+    if state != State.ONLINE:
+        bot.reply_to(m, f"Server is still {observer.get_state_str()}, wait until it's online")
+        return
+
     stop_server()
+    observer.assume_starting(0)
 
     bot.send_message(
         m.chat.id,
