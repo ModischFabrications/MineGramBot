@@ -43,10 +43,6 @@ A: Many minecraft versions use custom launchers, don't want to break that
 Q Why are you not allowing /say commands or bridge messages?  
 A: I can't pass commands to or read output from the running server instance because it's hidden behind the custom call.
 
-## Roadmap
-
-Turn into pip installable package? Might need to check poetry out for that, not sure yet.
-
 ## References
 
 - https://core.telegram.org/bots
