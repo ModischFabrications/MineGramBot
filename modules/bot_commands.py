@@ -91,7 +91,7 @@ def welcome_command(m):
 
     bot.send_message(
         m.chat.id,
-        f'I can start and stop a minecraft server for you.\n' +
+        f'I can start, stop and monitor a minecraft server.\n' +
         'Send /start to get this message again.\n'
     )
 
@@ -201,7 +201,7 @@ def stop_server_command(m):
 
     bot.send_message(
         m.chat.id,
-        f"Server is terminating"
+        f"Server was stopped"
     )
 
 
