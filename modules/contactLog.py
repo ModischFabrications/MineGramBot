@@ -3,7 +3,7 @@ from typing import Dict
 from telebot.types import User
 
 
-# TODO: should be persistent (local) storage
+# could use persistent (local) storage
 # sqllite3, redis, ...?
 
 class ContactLog:

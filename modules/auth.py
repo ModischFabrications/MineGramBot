@@ -11,8 +11,7 @@ class Rank(IntEnum):
     ADMIN = 3
 
 
-# TODO: use persistent storage
-# add users at runtime via admin command?
+# could use persistent storage to add users at runtime via admin command
 # /set_rank ID RANK
 # -> would need a persistent store
 # -> would make config useless?

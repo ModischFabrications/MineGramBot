@@ -15,12 +15,12 @@ from modules.mc_server_observer import State, MCServerObserver
 from modules.observer_scheduler import MCServerObserverScheduler
 
 logger = telebot.logger
-telebot.logger.setLevel(logging.INFO)  # Outputs debug messages to console.
+telebot.logger.setLevel(logging.INFO)
+logger.debug(f"Using telebot version {__version__}")
 
 apihelper.ENABLE_MIDDLEWARE = True
 apihelper.SESSION_TIME_TO_LIVE = 5 * 60
 bot = telebot.TeleBot(config.TOKEN)
-logger.debug(f"Using telebot version {__version__}")
 
 my_state = bot.get_me()
 
@@ -28,20 +28,21 @@ auth = Auth(config.USERS)
 observer = MCServerObserver(config.LOCAL_ADDRESS)
 userLog = ContactLog()
 
+INGORE_MSG_AFTER_S = 60
+
 
 def forbidden_access(m: Message, rank: Rank):
     if auth.allowed(m.from_user.id, rank):
         return False
 
-    bot.reply_to(
-        m,
-        f"Sorry {m.from_user.first_name}, but your rank {auth.get_rank(m.from_user.id).name} is not high enough"
-    )
+    bot.reply_to(m, f"Sorry {m.from_user.first_name}, but your rank {auth.get_rank(m.from_user.id).name} "
+                    f"is not high enough")
     return True
 
 
 # -- commands
 # reply_to to direct commands, send_message for generic updates meant for everybody
+# order of function definitions is relevant!
 
 @bot.middleware_handler(update_types=['message'])
 def log_user(bot_instance, m):
@@ -55,14 +56,10 @@ def block_forbidden(m):
     bot.reply_to(m, f"Sorry {m.from_user.first_name}, but you are {auth.get_rank(user_id).name} (ID: {user_id})")
 
 
-# @bot.message_handler(func=lambda query: (time.time() - query.date > 3600))
-# def ignore_very_old(m):
-#     user_id = m.from_user.id
-#     print(f"Very old attempt from {user_id}")
-
-
-@bot.message_handler(func=lambda query: (time.time() - query.date > 60))
-def block_old(m):
+@bot.message_handler(func=lambda query: (time.time() - query.date > INGORE_MSG_AFTER_S))
+def ignore_old(m):
+    """Never execute functions that we are unsure about still being relevant"""
+    # only answering the last message would be cleaner, but is more complicated
     user_id = m.from_user.id
     print(f"Old attempt from {user_id}")
     bot.reply_to(m, f"Sorry {m.from_user.first_name}, but I was not running. Send again if it's still relevant")

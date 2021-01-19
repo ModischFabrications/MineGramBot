@@ -15,7 +15,7 @@ def main():
     print(f"My API status: {bot_commands.my_state}")
 
     print("Press CTRL+C to stop server")
-    # this version will still escape with CTRL + S but ignores user errors
+    # this version will still escape on keyboard interrupt but ignores user errors
     bot_commands.bot.infinity_polling()
 
 
