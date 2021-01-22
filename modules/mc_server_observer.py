@@ -13,6 +13,7 @@ class State(IntEnum):
     ASSUMED_STARTING = 2
     PROVED_STARTING = 3
     ONLINE = 4
+    ASSUMED_STOPPING = 5
 
 
 class MCServerObserver:
@@ -25,11 +26,18 @@ class MCServerObserver:
         self._server = MinecraftServer.lookup(server_address)
 
         self._assumed_starting_until = 0
+        self._assumed_stopping_until = 0
 
     def assume_starting(self, seconds: int):
         """can't check that the server is starting until it actually answers any calls,
         assume so until proven by an answer or disproven when 'seconds' passed"""
+        self._assumed_stopping_until = 0
         self._assumed_starting_until = time.time() + seconds
+
+    def assume_stopping(self, seconds: int):
+        """server will act like it is still online for a few seconds, assume it is stopping"""
+        self._assumed_starting_until = 0
+        self._assumed_stopping_until = time.time() + seconds
 
     def _fetch_state(self) -> PingResponse:
         """Caches results to reduce load, prevent bans and decrease latency for spammer clients"""
@@ -50,6 +58,10 @@ class MCServerObserver:
     def get_state(self) -> Tuple[State, Optional[PingResponse]]:
         try:
             state = self._fetch_state()
+
+            # try to get result first to see if offline is proven
+            if self._assumed_stopping_until > time.time(): return State.ASSUMED_STOPPING, None
+
             return State.ONLINE, state
         except ConnectionRefusedError:
             # nothing there (yet?)
@@ -67,6 +79,9 @@ class MCServerObserver:
             return "assumed to be starting"
         elif state == State.PROVED_STARTING:
             return "starting"
+        elif state == State.ASSUMED_STOPPING:
+            # nothing there
+            return "assumed to be stopping"
         elif state == State.OFFLINE:
             # nothing there
             return "offline"

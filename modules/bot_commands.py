@@ -194,7 +194,7 @@ def stop_server_command(m):
         return
 
     stop_server()
-    observer.assume_starting(0)
+    observer.assume_stopping(config.MAX_TIME_TO_STOP__S)
 
     bot.send_message(
         m.chat.id,
